@@ -5,6 +5,8 @@ import React from 'react';
 import logo from '../Img/logo.png';
 import './App.css';
 
+import NewsPanel from '../NewsPanel/NewsPanel'
+
 
 class App extends React.Component {
     render() {
@@ -12,6 +14,7 @@ class App extends React.Component {
             <div>
                 <img className='logo' src={logo} alt='logo'/>
                 <div className='container'>
+                    <NewsPanel />
                 </div>
             </div>
         );
