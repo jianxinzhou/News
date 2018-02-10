@@ -3,6 +3,7 @@ var path = require('path');
 
 // routes文件中添加的路由在这里进行注册
 var index = require('./routes/index');
+var news = require('./routes/news')
 
 var app = express();
 
@@ -17,6 +18,7 @@ app.use('/static', express.static(path.join(__dirname, '../client/build/static/'
 
 // 添加路由
 app.use('/', index);
+app.use('/news', news)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
