@@ -1,0 +1,13 @@
+''' python module that connect to mongodb '''
+
+from pymongo import MongoClient
+
+MONGO_DB_HOST = 'localhost'
+MONGO_DB_PORT = 27017
+DB_NAME = 'tap-news'
+
+client = MongoClient("%s:%d" % (MONGO_DB_HOST, MONGO_DB_PORT))
+
+def get_db(db_name=DB_NAME):
+    db = client[db_name]
+    return db
