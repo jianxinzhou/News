@@ -1,5 +1,5 @@
 import './NewsPanel.css';
-
+import Auth from '../Auth/Auth'
 import React from 'react';
 import _ from 'lodash';
 
@@ -42,7 +42,10 @@ class NewsPanel extends React.Component {
     loadMoreNews() {
         let request = new Request('http://localhost:3000/news', {
             method: 'GET',
-            cache: false
+            headers: {
+                'authorization': 'bearer ' + Auth.getToken(),
+            },
+            cache: false,
         });
 
         fetch(request)
@@ -68,7 +71,7 @@ class NewsPanel extends React.Component {
         */
         let newsCardList = this.state.news.map(function(news) {
             return (
-                <a className='list-group-item' href='#'>
+                <a className='list-group-item'>
                     <NewsCard news={news} />
                 </a>
             );
