@@ -2,17 +2,7 @@
 """后端起rpc server，供前端rpc client调用"""
 
 import pyjsonrpc
-import json
-import os
-import sys
-
-from bson.json_util import dumps
-
-#import common package in parent dictionary
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
-
-import mongodb_client
-
+import operations
 
 SERVER_HOST = 'localhost'
 SERER_PORT = 4040
@@ -25,14 +15,19 @@ class RequestHandler(pyjsonrpc.HttpRequestHandler):
         print "add is called with %d and %d" % (num1, num2)
         return num1 + num2
 
+    """ Get news summaries for a user """
     @pyjsonrpc.rpcmethod
-    def getNews(self):
-        db = mongodb_client.get_db()
-        # db['news'].find() returns iterable type, switch it to list to return
-        news = list(db['news'].find())
-        # we get bson format from mongodb server, dumps what we get to string,
-        # then turns it to be json format by json.loads mehtod is needed
-        return json.loads(dumps(news))
+    def getNewsSummariesForUser(self, user_id, page_num):
+        return operations.getNewsSummariesForUser(user_id, page_num)
+
+    # @pyjsonrpc.rpcmethod
+    # def getNews(self):
+    #     db = mongodb_client.get_db()
+    #     # db['news'].find() returns iterable type, switch it to list to return
+    #     news = list(db['news'].find())
+    #     # we get bson format from mongodb server, dumps what we get to string,
+    #     # then turns it to be json format by json.loads mehtod is needed
+    #     return json.loads(dumps(news))
 
 
 # Threading HTTP Server
