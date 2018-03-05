@@ -11,7 +11,12 @@ class NewsPanel extends React.Component {
         super();
         // 这个state是自己内部想keep的一个内部量
         // newspanel里到底有多少个news（newscard）
-        this.state = {news: null};
+        // this.state = {news: null};
+        this.state = {
+            news: null,
+            pageNum: 1,
+            loadedAll: false,
+        }
         // 对handleScroll以后的调用是以callback的方式
         // 因此需要绑定this，这样才能调用loadMoreNews等其他方法
         this.handleScroll = this.handleScroll.bind(this);
@@ -40,22 +45,38 @@ class NewsPanel extends React.Component {
 
     // 从后端去拿新闻，通过rest api的方式
     loadMoreNews() {
-        let request = new Request('http://localhost:3000/news', {
+        if (this.state.loadedAll === true) {
+            return;
+        }
+
+        console.log(this.state.pageNum);
+
+        let url = 'http://localhost:3000/news/userId/' + Auth.getEmail()
+            + '/pageNum/' + this.state.pageNum;
+
+        let request = new Request(encodeURI(url), {
             method: 'GET',
             headers: {
-                'authorization': 'bearer ' + Auth.getToken(),
+                'Authorization': 'bearer ' + Auth.getToken(),
             },
-            cache: false,
+            cache: false
         });
 
         fetch(request)
             .then(res => res.json()) //收到response后转成json格式
             .then((news) => {
+                if (!news || news.length === 0) {
+                    this.setState({
+                        loadedAll: true
+                    })
+                }
+
                 this.setState({
                     // 左边的news是constructor中定义的news
                     // 如果原先的news不为空，request拿到的news贴在原来news的后面，相当于append操作
                     // 如果原先的news为空，则用request拿到的news
-                    news: this.state.news ? this.state.news.concat(news) : news
+                    news: this.state.news ? this.state.news.concat(news) : news,
+                    pageNum: this.state.pageNum + 1,
                 })
             });
     }
