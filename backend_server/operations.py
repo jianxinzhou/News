@@ -14,17 +14,25 @@ from datetime import datetime
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 
 import mongodb_client
+from cloudAMQP_client import CloudAMQPClient
 
 REDIS_HOST = "localhost"
 REDIS_PORT = 6379
 
 NEWS_TABLE_NAME = "news-test"
+CLICK_LOGS_TABLE_NAME = "click_logs"
 
 NEWS_LIMIT = 100
 NEWS_LIST_BATCH_SIZE = 10
 USER_NEWS_TIME_OUT_IN_SECONDS = 60
 
+LOG_CLICKS_TASK_QUEUE_URL = "localhost"
+LOG_CLICKS_TASK_QUEUE_NAME = "tap-news-log-clicks-task-queue"
+
+
 redis_client = redis.StrictRedis(REDIS_HOST, REDIS_PORT, db=0)
+cloudAMQP_client = CloudAMQPClient(LOG_CLICKS_TASK_QUEUE_URL, LOG_CLICKS_TASK_QUEUE_NAME)
+
 
 def getNewsSummariesForUser(user_id, page_num):
     page_num = int(page_num)
@@ -61,3 +69,16 @@ def getNewsSummariesForUser(user_id, page_num):
         del news['text']
 
     return json.loads(dumps(sliced_news))
+
+
+def logNewsClickForUser(user_id, news_id):
+    message = {'userId': user_id, 'newsId': news_id, 'timestamp': datetime.utcnow()}
+
+    db = mongodb_client.get_db()
+    db[CLICK_LOGS_TABLE_NAME].insert(message)
+
+    # Send log task to machine learning service for prediction
+    message = {'userId': user_id, 'newsId': news_id, 'timestamp': str(datetime.utcnow())}
+    print('message: ' + str(message))
+    print('---------------------------------> send click log message')
+    cloudAMQP_client.sendMessage(message)

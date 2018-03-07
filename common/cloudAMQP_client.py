@@ -10,16 +10,31 @@ class CloudAMQPClient:
         self.queue_name = queue_name
         self.params = pika.ConnectionParameters(cloud_amqp_url)
         self.params.socket_timeout = 3
-        self.connection = pika.BlockingConnection(self.params)
-        self.channel = self.connection.channel()
-        self.channel.queue_declare(queue=queue_name)
+        self.connection = None
+        self.channel = None
+        self.connect()
 
-    def sendMessage(self, message):
-        ''' send a message '''
+    def connect(self):
+        if not self.connection or self.connection.is_closed:
+            self.connection = pika.BlockingConnection(self.params)
+            self.channel = self.connection.channel()
+            self.channel.queue_declare(queue=self.queue_name)
+
+    def publish(self, message):
         self.channel.basic_publish(exchange='',
                                    routing_key=self.queue_name,
                                    body=json.dumps(message))
         print "[x] Sent message to %s %s" % (self.queue_name, message)
+
+    def sendMessage(self, message):
+        ''' send a message '''
+        # https://stackoverflow.com/questions/35193335/how-to-reconnect-to-rabbitmq
+        try:
+            self.publish(message)
+        except pika.exceptions.ConnectionClosed:
+            print "reconnecting to queue"
+            self.connect()
+            self.publish(message)
 
     def getMessage(self):
         ''' get a message '''

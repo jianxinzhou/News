@@ -29,6 +29,12 @@ class RequestHandler(pyjsonrpc.HttpRequestHandler):
     #     # then turns it to be json format by json.loads mehtod is needed
     #     return json.loads(dumps(news))
 
+    """ Log user news clicks """
+    @pyjsonrpc.rpcmethod
+    def logNewsClickForUser(self, user_id, news_id):
+        print('rpc method log news click')
+        return operations.logNewsClickForUser(user_id, news_id)
+
 
 # Threading HTTP Server
 HTTP_SERVER = pyjsonrpc.ThreadingHttpServer(
