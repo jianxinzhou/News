@@ -37,7 +37,7 @@ LOG_CLICKS_TASK_QUEUE_URL = "localhost"
 LOG_CLICKS_TASK_QUEUE_NAME = "tap-news-log-clicks-task-queue"
 
 PREFERENCE_MODEL_TABLE_NAME = "user_preference_model"
-NEWS_TABLE_NAME = "news-test"
+NEWS_TABLE_NAME = "news"
 
 cloudAMQP_client = CloudAMQPClient(LOG_CLICKS_TASK_QUEUE_URL, LOG_CLICKS_TASK_QUEUE_NAME)
 
@@ -71,7 +71,7 @@ def handle_message(msg):
 
     # Update model using time decaying method
     news = db[NEWS_TABLE_NAME].find_one({'digest': newsId})
-    print(news)
+    print("news is {}".format(news))
     if (news is None
         or 'class' not in news
         or news['class'] not in news_classes.classes):

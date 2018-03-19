@@ -10,6 +10,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 
 import mongodb_client
+import news_topic_modeling_service_client
 
 from cloudAMQP_client import CloudAMQPClient
 
@@ -18,7 +19,7 @@ DEDUPE_NEWS_TASK_QUEUE_NAME = 'tap-news-dedupe-news-task-queue'
 
 SLEEP_TIME_IN_SECONDS = 1
 
-NEWS_TABLE_NAME = "news-test"
+NEWS_TABLE_NAME = "news"
 
 SAME_NEWS_SIMILARITY_THRESHOLD = 0.9
 
@@ -60,6 +61,12 @@ def handle_message(msg):
 
     # mongodb时间条件查找，需要datetime类型，因此将字符串类型转换为datetime
     task['publishedAt'] = parser.parse(task['publishedAt'])
+
+    # classify news
+    title = task['title']
+    if title is not None:
+        topic = news_topic_modeling_service_client.classify(title)
+        task['class'] = topic
 
     # upsert=true，有的话直接覆盖，没有的话插入
     db[NEWS_TABLE_NAME].replace_one({'digest': task['digest']}, task, upsert=True)
